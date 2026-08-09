@@ -14,6 +14,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 }
 
@@ -125,6 +129,125 @@ resource "aws_security_group" "rds" {
 resource "aws_db_subnet_group" "bedrock" {
   name       = "bedrock-db-subnet-group"
   subnet_ids = module.vpc.private_subnets
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "random_password" "mysql" {
+  length  = 20
+  special = false
+}
+
+resource "random_password" "postgres" {
+  length  = 20
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "mysql" {
+  name = "bedrock/catalog-mysql-credentials"
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "mysql" {
+  secret_id = aws_secretsmanager_secret.mysql.id
+  secret_string = jsonencode({
+    username = "catalog_admin"
+    password = random_password.mysql.result
+    engine   = "mysql"
+    host     = aws_db_instance.mysql.address
+    port     = 3306
+    dbname   = "catalog"
+  })
+}
+
+resource "aws_secretsmanager_secret" "postgres" {
+  name = "bedrock/orders-postgres-credentials"
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "postgres" {
+  secret_id = aws_secretsmanager_secret.postgres.id
+  secret_string = jsonencode({
+    username = "orders_admin"
+    password = random_password.postgres.result
+    engine   = "postgres"
+    host     = aws_db_instance.postgres.address
+    port     = 5432
+    dbname   = "orders"
+  })
+}
+
+resource "aws_db_instance" "mysql" {
+  identifier     = "bedrock-catalog-mysql"
+  engine         = "mysql"
+  engine_version = "8.0"
+  instance_class = "db.t3.micro"
+
+  allocated_storage = 20
+  storage_type       = "gp3"
+
+  db_name  = "catalog"
+  username = "catalog_admin"
+  password = random_password.mysql.result
+
+  db_subnet_group_name   = aws_db_subnet_group.bedrock.name
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  multi_az            = false
+  publicly_accessible = false
+  skip_final_snapshot = true
+
+  backup_retention_period = 1
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "aws_db_instance" "postgres" {
+  identifier     = "bedrock-orders-postgres"
+  engine         = "postgres"
+  engine_version = "16"
+  instance_class = "db.t3.micro"
+
+  allocated_storage = 20
+  storage_type       = "gp3"
+
+  db_name  = "orders"
+  username = "orders_admin"
+  password = random_password.postgres.result
+
+  db_subnet_group_name   = aws_db_subnet_group.bedrock.name
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  multi_az            = false
+  publicly_accessible = false
+  skip_final_snapshot = true
+
+  backup_retention_period = 1
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "aws_dynamodb_table" "carts" {
+  name         = "bedrock-carts"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
 
   tags = {
     Project = "tinyuka-2025-capstone"
