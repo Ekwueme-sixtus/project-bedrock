@@ -87,3 +87,46 @@ module "eks" {
     Project = "tinyuka-2025-capstone"
   }
 }
+
+resource "aws_security_group" "rds" {
+  name        = "bedrock-rds-sg"
+  description = "Allow DB traffic from EKS nodes only"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description     = "MySQL from EKS nodes (Catalog service)"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [module.eks.node_security_group_id]
+  }
+
+  ingress {
+    description     = "PostgreSQL from EKS nodes (Orders service)"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [module.eks.node_security_group_id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name    = "bedrock-rds-sg"
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "aws_db_subnet_group" "bedrock" {
+  name       = "bedrock-db-subnet-group"
+  subnet_ids = module.vpc.private_subnets
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
