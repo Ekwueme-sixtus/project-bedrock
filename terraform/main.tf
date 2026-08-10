@@ -443,3 +443,28 @@ resource "aws_iam_user_policy" "bedrock_dev_view_put_object" {
   user   = aws_iam_user.bedrock_dev_view.name
   policy = data.aws_iam_policy_document.dev_view_put_object.json
 }
+
+# ============================================================
+# Cost Guardrail: AWS Budget with email alert
+# ============================================================
+
+resource "aws_budgets_budget" "bedrock" {
+  name         = "bedrock-capstone-budget"
+  budget_type  = "COST"
+  limit_amount = "20"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  cost_filter {
+    name   = "TagKeyValue"
+    values = ["user:Project$tinyuka-2025-capstone"]
+  }
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 80
+    threshold_type              = "PERCENTAGE"
+    notification_type           = "ACTUAL"
+    subscriber_email_addresses  = ["abuchi40@gmail.com"]
+  }
+}
