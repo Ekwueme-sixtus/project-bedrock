@@ -1,0 +1,35 @@
+catalog:
+  serviceAccount:
+    create: false
+    name: bedrock-app-sa
+  mysql:
+    create: false
+    endpoint: "bedrock-catalog-mysql.cux4qe20q18n.us-east-1.rds.amazonaws.com:3306"
+    database: "catalog"
+    secret:
+      create: false
+      name: catalog-db
+
+orders:
+  serviceAccount:
+    create: false
+    name: bedrock-app-sa
+  postgresql:
+    create: false
+    endpoint:
+      host: "bedrock-orders-postgres.cux4qe20q18n.us-east-1.rds.amazonaws.com"
+      port: 5432
+    database: "orders"
+    secret:
+      create: false
+      name: orders-db
+
+carts:
+  serviceAccount:
+    create: false
+    name: bedrock-app-sa
+  persistence: dynamodb
+  dynamodb:
+    create: false
+    createTable: false
+    tableName: "bedrock-carts"
