@@ -1,0 +1,18 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/volumes",
+    "value": [
+      {"name": "tmp-volume", "emptyDir": {"medium": "Memory"}},
+      {"name": "orders-secrets", "csi": {"driver": "secrets-store.csi.k8s.io", "readOnly": true, "volumeAttributes": {"secretProviderClass": "orders-db-secrets"}}}
+    ]
+  },
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/volumeMounts",
+    "value": [
+      {"name": "tmp-volume", "mountPath": "/tmp"},
+      {"name": "orders-secrets", "mountPath": "/mnt/secrets-store", "readOnly": true}
+    ]
+  }
+]
