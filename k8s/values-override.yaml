@@ -1,3 +1,11 @@
+ui:
+  endpoints:
+    catalog: "http://retail-store-catalog:80"
+    carts: "http://retail-store-carts:80"
+    checkout: "http://retail-store-checkout:80"
+    orders: "http://retail-store-orders:80"
+    assets: "http://retail-store-assets:80"
+
 catalog:
   serviceAccount:
     create: false
