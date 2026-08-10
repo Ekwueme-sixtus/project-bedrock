@@ -1,0 +1,48 @@
+{
+    "logGroups": [
+        {
+            "logGroupName": "/aws/containerinsights/project-bedrock-cluster/application",
+            "creationTime": 1786400239308,
+            "metricFilterCount": 0,
+            "arn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/application:*",
+            "storedBytes": 0,
+            "logGroupClass": "STANDARD",
+            "logGroupArn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/application",
+            "deletionProtectionEnabled": false,
+            "bearerTokenAuthenticationEnabled": false
+        },
+        {
+            "logGroupName": "/aws/containerinsights/project-bedrock-cluster/dataplane",
+            "creationTime": 1786400239308,
+            "metricFilterCount": 0,
+            "arn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/dataplane:*",
+            "storedBytes": 0,
+            "logGroupClass": "STANDARD",
+            "logGroupArn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/dataplane",
+            "deletionProtectionEnabled": false,
+            "bearerTokenAuthenticationEnabled": false
+        },
+        {
+            "logGroupName": "/aws/containerinsights/project-bedrock-cluster/host",
+            "creationTime": 1786400239308,
+            "metricFilterCount": 0,
+            "arn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/host:*",
+            "storedBytes": 0,
+            "logGroupClass": "STANDARD",
+            "logGroupArn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/host",
+            "deletionProtectionEnabled": false,
+            "bearerTokenAuthenticationEnabled": false
+        },
+        {
+            "logGroupName": "/aws/containerinsights/project-bedrock-cluster/performance",
+            "creationTime": 1786400313782,
+            "metricFilterCount": 0,
+            "arn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/performance:*",
+            "storedBytes": 0,
+            "logGroupClass": "STANDARD",
+            "logGroupArn": "arn:aws:logs:us-east-1:461905260869:log-group:/aws/containerinsights/project-bedrock-cluster/performance",
+            "deletionProtectionEnabled": false,
+            "bearerTokenAuthenticationEnabled": false
+        }
+    ]
+}
