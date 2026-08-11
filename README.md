@@ -94,3 +94,11 @@ Verified with direct pod-to-pod `curl` tests:
 - `catalog → orders` (not an allowed path): **times out** ✅
 - `ui → catalog` (allowed): **200/404** (reaches app) ✅
 - `checkout → orders` (allowed): **200** ✅
+
+## Accessing the Store
+
+The retail store is exposed via an AWS Load Balancer Controller-managed ALB at:
+
+http://k8s-retailap-retailst-1ada82715c-2030306503.us-east-1.elb.amazonaws.com
+
+Note: The AWS Load Balancer Controller IAM policy (AWSLoadBalancerControllerIAMPolicy) required updating to a newer version to include the elasticloadbalancing:DescribeListenerAttributes action - without it, ALB provisioning fails with an AccessDenied error. Updated via a new policy version (v2.14.1 of the official policy JSON from the aws-load-balancer-controller GitHub repo).
