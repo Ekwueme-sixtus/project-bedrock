@@ -549,3 +549,23 @@ output "assets_bucket_name" {
   value = aws_s3_bucket.assets.bucket
 }
 
+
+# ============================================================
+# Bonus 5.4: VPC CNI managed add-on with NetworkPolicy enforcement enabled
+# ============================================================
+
+resource "aws_eks_addon" "vpc_cni" {
+  cluster_name = module.eks.cluster_name
+  addon_name   = "vpc-cni"
+
+  configuration_values = jsonencode({
+    enableNetworkPolicy = "true"
+  })
+
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}

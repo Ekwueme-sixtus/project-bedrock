@@ -1,0 +1,143 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ui-ingress
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: ui
+  ingress:
+    - {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-catalog-from-ui
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: catalog
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ui
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-carts-from-ui-checkout
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: carts
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ui
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: checkout
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-orders-from-ui-checkout
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: orders
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ui
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: checkout
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-checkout-from-ui
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: checkout
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ui
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-orders-rabbitmq-from-orders-checkout
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: retail-store-orders
+      app.kubernetes.io/component: rabbitmq
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: orders
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: checkout
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-checkout-redis-from-checkout
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: retail-store-checkout
+      app.kubernetes.io/component: redis
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: checkout
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-assets-from-ui
+  namespace: retail-app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: assets
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ui
+  policyTypes:
+    - Ingress

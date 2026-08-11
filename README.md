@@ -83,3 +83,14 @@ kubectl delete pod -n retail-app -l app.kubernetes.io/name=ui
 ## Bonus: 5.5 Resilience — Database Backup Posture
 
 Both RDS instances (MySQL for Catalog, PostgreSQL for Orders) have automated backups enabled via `backup_retention_period = 1` (1-day retention window). Chosen to satisfy the `BackupRetentionPeriod > 0` requirement while keeping storage cost minimal for an exam environment; the retention window can be raised in `terraform/main.tf` for production use.
+
+## Bonus: 5.4 Network Policies
+
+Kubernetes `NetworkPolicy` resources restrict pod-to-pod traffic within `retail-app` to only the paths each service actually needs (manifests in `k8s/network-policies/`). A default-deny-ingress baseline blocks all traffic unless explicitly allowed.
+
+**Important:** the AWS VPC CNI does not enforce NetworkPolicy by default — it must be explicitly enabled via the `vpc-cni` EKS add-on's `enableNetworkPolicy` configuration value (`terraform/main.tf`), which was added as part of this work.
+
+Verified with direct pod-to-pod `curl` tests:
+- `catalog → orders` (not an allowed path): **times out** ✅
+- `ui → catalog` (allowed): **200/404** (reaches app) ✅
+- `checkout → orders` (allowed): **200** ✅
