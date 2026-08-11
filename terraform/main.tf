@@ -85,7 +85,7 @@ module "eks" {
     }
   }
 
-  enable_cluster_creator_admin_permissions = true
+  enable_cluster_creator_admin_permissions = false
 
   tags = {
     Project = "tinyuka-2025-capstone"
@@ -567,5 +567,43 @@ resource "aws_eks_addon" "vpc_cni" {
 
   tags = {
     Project = "tinyuka-2025-capstone"
+  }
+}
+
+# ============================================================
+# Stable cluster admin access entries (replaces fragile
+# enable_cluster_creator_admin_permissions, which reassigns on
+# every apply depending on which identity ran it)
+# ============================================================
+
+resource "aws_eks_access_entry" "terraform_cli_admin" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = "arn:aws:iam::461905260869:user/terraform-cli"
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "terraform_cli_admin_policy" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = "arn:aws:iam::461905260869:user/terraform-cli"
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+}
+
+resource "aws_eks_access_entry" "github_actions_admin" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = aws_iam_role.github_actions.arn
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "github_actions_admin_policy" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = aws_iam_role.github_actions.arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
   }
 }
