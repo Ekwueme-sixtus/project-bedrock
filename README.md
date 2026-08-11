@@ -68,3 +68,18 @@ See submitted Google Doc for `bedrock-dev-view` Access Key ID, Secret Access Key
 ## Tagging
 
 All resources tagged `Project: tinyuka-2025-capstone`.
+
+## Bonus: 5.5 Resilience — Pod Self-Healing Demo
+
+**Before:** `retail-store-ui-79f76d545d-4j77f` — Running, age 18h, node `ip-10-0-1-29.ec2.internal`
+
+**Action:**
+```bash
+kubectl delete pod -n retail-app -l app.kubernetes.io/name=ui
+```
+
+**After:** Kubernetes' ReplicaSet controller detected the deletion and scheduled a replacement automatically — `retail-store-ui-79f76d545d-5hnxg` reached `1/1 Running` within **~21 seconds**, no manual intervention.
+
+## Bonus: 5.5 Resilience — Database Backup Posture
+
+Both RDS instances (MySQL for Catalog, PostgreSQL for Orders) have automated backups enabled via `backup_retention_period = 1` (1-day retention window). Chosen to satisfy the `BackupRetentionPeriod > 0` requirement while keeping storage cost minimal for an exam environment; the retention window can be raised in `terraform/main.tf` for production use.
