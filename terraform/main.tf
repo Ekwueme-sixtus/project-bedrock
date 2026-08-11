@@ -468,3 +468,83 @@ resource "aws_budgets_budget" "bedrock" {
     subscriber_email_addresses  = ["abuchi40@gmail.com"]
   }
 }
+
+# ============================================================
+# Phase 8: CI/CD — GitHub Actions OIDC
+# ============================================================
+
+data "tls_certificate" "github_actions" {
+  url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
+}
+
+resource "aws_iam_openid_connect_provider" "github_actions" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.github_actions.certificates[0].sha1_fingerprint]
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+data "aws_iam_policy_document" "github_actions_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:Ekwueme-sixtus/project-bedrock:*"]
+    }
+  }
+}
+
+resource "aws_iam_role" "github_actions" {
+  name               = "bedrock-github-actions-role"
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume.json
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_admin" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+# ============================================================
+# Required root outputs (Section 4.1 / Deliverables)
+# ============================================================
+
+output "cluster_endpoint" {
+  value = module.eks.cluster_endpoint
+}
+
+output "cluster_name" {
+  value = module.eks.cluster_name
+}
+
+output "region" {
+  value = "us-east-1"
+}
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}
+
+output "assets_bucket_name" {
+  value = aws_s3_bucket.assets.bucket
+}
