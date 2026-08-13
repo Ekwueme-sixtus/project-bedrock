@@ -1,0 +1,42 @@
+# Custom values overriding retail-store-sample-chart defaults
+# to point the data layer at AWS-managed services (RDS, DynamoDB)
+# instead of in-cluster database pods — Bonus 5.1
+
+catalog:
+  mysql:
+    create: false
+    endpoint: "bedrock-catalog-mysql.cux4qe20q18n.us-east-1.rds.amazonaws.com"
+    database: catalog
+    secret:
+      create: false
+      name: "bedrock/catalog-mysql-credentials"
+
+orders:
+  postgresql:
+    create: false
+    database: orders
+    endpoint:
+      host: "bedrock-orders-postgres.cux4qe20q18n.us-east-1.rds.amazonaws.com"
+      port: "5432"
+    secret:
+      create: false
+      name: "bedrock/orders-postgres-credentials"
+
+carts:
+  persistence: dynamodb
+  dynamodb:
+    create: false
+    createTable: false
+    tableName: "bedrock-carts"
+
+checkout:
+  endpoints:
+    orders: http://orders:80
+
+ui:
+  endpoints:
+    catalog: http://catalog:80
+    carts: http://carts:80
+    checkout: http://checkout:80
+    orders: http://orders:80
+    assets: http://assets:80

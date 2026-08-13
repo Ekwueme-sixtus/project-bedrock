@@ -114,3 +114,17 @@ Status: IAM/IRSA configuration is correctly deployed and verifiable via `aws iam
 A self-signed TLS certificate was generated and imported into ACM (arn:aws:acm:us-east-1:461905260869:certificate/7689197d-3ec5-434f-b8be-982130cb313e), and an HTTPS listener (port 443) was successfully attached to the ALB via Ingress annotations, alongside the existing HTTP listener.
 
 Status: ACM certificate import and ALB HTTPS listener creation both succeeded and are verifiable via `aws elbv2 describe-listeners`. Security groups correctly allow inbound 443 from 0.0.0.0/0 on both attached SGs. However, TLS handshakes to the HTTPS listener consistently fail with a "TLS alert: access denied" at the protocol level (reproduced at both TLS 1.2 and TLS 1.3), a known but under-documented ALB/self-signed-cert interaction. Root cause not isolated within the time available. The Ingress was reverted to HTTP-only to keep the live store stable and accessible; the HTTPS configuration files and troubleshooting are preserved for reference in tls/ and this note.
+
+## Bonus: 5.1 Helm-Based Deployment
+
+The upstream `retail-store-sample-chart` (v0.8.5, `oci://public.ecr.aws/aws-containers/retail-store-sample-chart`) is used with a custom `helm/values-bedrock.yaml` overriding the data layer to point at this project's managed AWS services instead of in-cluster database pods:
+
+- catalog.mysql -> RDS MySQL (bedrock-catalog-mysql), credentials from Secrets Manager
+- orders.postgresql -> RDS PostgreSQL (bedrock-orders-postgres), credentials from Secrets Manager
+- carts.dynamodb -> DynamoDB table bedrock-carts
+
+Deploy with:
+
+helm install retail-store-bedrock oci://public.ecr.aws/aws-containers/retail-store-sample-chart --version 0.8.5 -n retail-app -f helm/values-bedrock.yaml
+
+Validated via `helm template` dry-run (renders successfully, exit code 0, all RDS endpoints/DynamoDB table/Secrets Manager references correctly present in generated manifests). Not applied to the live cluster in this submission — the application is currently running via the raw manifests documented earlier in this README, which are proven stable and were kept in place to avoid disrupting the working deployment during grading.
