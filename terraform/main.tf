@@ -607,3 +607,71 @@ resource "aws_eks_access_policy_association" "github_actions_admin_policy" {
     type = "cluster"
   }
 }
+
+# ============================================================
+# Bonus 5.3: Cluster Autoscaler — IAM role via IRSA
+# ============================================================
+
+data "aws_iam_policy_document" "cluster_autoscaler_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::461905260869:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/28545FE18AC989D1C13CE8C9EF7FB2E4"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "oidc.eks.us-east-1.amazonaws.com/id/28545FE18AC989D1C13CE8C9EF7FB2E4:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "oidc.eks.us-east-1.amazonaws.com/id/28545FE18AC989D1C13CE8C9EF7FB2E4:sub"
+      values   = ["system:serviceaccount:kube-system:cluster-autoscaler-aws-cluster-autoscaler"]
+    }
+  }
+}
+
+resource "aws_iam_role" "cluster_autoscaler" {
+  name               = "bedrock-cluster-autoscaler-role"
+  assume_role_policy = data.aws_iam_policy_document.cluster_autoscaler_assume.json
+
+  tags = {
+    Project = "tinyuka-2025-capstone"
+  }
+}
+
+data "aws_iam_policy_document" "cluster_autoscaler_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:DescribeAutoScalingInstances",
+      "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeTags",
+      "ec2:DescribeLaunchTemplateVersions",
+      "ec2:DescribeInstanceTypes"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "autoscaling:SetDesiredCapacity",
+      "autoscaling:TerminateInstanceInAutoScalingGroup",
+      "autoscaling:UpdateAutoScalingGroup"
+    ]
+    resources = ["arn:aws:autoscaling:us-east-1:461905260869:autoScalingGroup:*:autoScalingGroupName/eks-bedrock_nodes-20260809045653298800000010-2acff270-c8bc-cfbd-3203-511d08bf1d4a"]
+  }
+}
+
+resource "aws_iam_role_policy" "cluster_autoscaler" {
+  name   = "bedrock-cluster-autoscaler-policy"
+  role   = aws_iam_role.cluster_autoscaler.id
+  policy = data.aws_iam_policy_document.cluster_autoscaler_policy.json
+}

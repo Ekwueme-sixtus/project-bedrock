@@ -102,3 +102,9 @@ The retail store is exposed via an AWS Load Balancer Controller-managed ALB at:
 http://k8s-retailap-retailst-1ada82715c-2030306503.us-east-1.elb.amazonaws.com
 
 Note: The AWS Load Balancer Controller IAM policy (AWSLoadBalancerControllerIAMPolicy) required updating to a newer version to include the elasticloadbalancing:DescribeListenerAttributes action - without it, ALB provisioning fails with an AccessDenied error. Updated via a new policy version (v2.14.1 of the official policy JSON from the aws-load-balancer-controller GitHub repo).
+
+## Bonus: 5.3 Cluster Autoscaling (Partial)
+
+The Cluster Autoscaler was installed via Helm with a dedicated IRSA role (`bedrock-cluster-autoscaler-role`, Terraform-managed in `terraform/main.tf`) scoped to the node group's specific ASG (least-privilege: Describe* actions account-wide, mutating actions restricted to one ASG ARN).
+
+Status: IAM/IRSA configuration is correctly deployed and verifiable via `aws iam get-role`/`get-role-policy`. However, a live scale-up demonstration was not achieved in this environment — the autoscaler's reconcile loop did not complete a scan cycle after IRSA was fixed, despite the ASG having available headroom (MaxSize=3, DesiredCapacity=2) and 12+ pods in Pending state during a forced load test. Root cause not fully isolated within the time available; worth revisiting with a longer diagnostic window or by trying Karpenter as an alternative.
