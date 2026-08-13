@@ -108,3 +108,9 @@ Note: The AWS Load Balancer Controller IAM policy (AWSLoadBalancerControllerIAMP
 The Cluster Autoscaler was installed via Helm with a dedicated IRSA role (`bedrock-cluster-autoscaler-role`, Terraform-managed in `terraform/main.tf`) scoped to the node group's specific ASG (least-privilege: Describe* actions account-wide, mutating actions restricted to one ASG ARN).
 
 Status: IAM/IRSA configuration is correctly deployed and verifiable via `aws iam get-role`/`get-role-policy`. However, a live scale-up demonstration was not achieved in this environment — the autoscaler's reconcile loop did not complete a scan cycle after IRSA was fixed, despite the ASG having available headroom (MaxSize=3, DesiredCapacity=2) and 12+ pods in Pending state during a forced load test. Root cause not fully isolated within the time available; worth revisiting with a longer diagnostic window or by trying Karpenter as an alternative.
+
+## Bonus: 5.2 TLS/ACM (Partial)
+
+A self-signed TLS certificate was generated and imported into ACM (arn:aws:acm:us-east-1:461905260869:certificate/7689197d-3ec5-434f-b8be-982130cb313e), and an HTTPS listener (port 443) was successfully attached to the ALB via Ingress annotations, alongside the existing HTTP listener.
+
+Status: ACM certificate import and ALB HTTPS listener creation both succeeded and are verifiable via `aws elbv2 describe-listeners`. Security groups correctly allow inbound 443 from 0.0.0.0/0 on both attached SGs. However, TLS handshakes to the HTTPS listener consistently fail with a "TLS alert: access denied" at the protocol level (reproduced at both TLS 1.2 and TLS 1.3), a known but under-documented ALB/self-signed-cert interaction. Root cause not isolated within the time available. The Ingress was reverted to HTTP-only to keep the live store stable and accessible; the HTTPS configuration files and troubleshooting are preserved for reference in tls/ and this note.
